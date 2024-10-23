@@ -23,6 +23,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug OIDC Token
+        run: |
+          echo "OIDC Token: $ACTIONS_ID_TOKEN_REQUEST_URL"
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ steps.auth.outputs.id_token }}
+
       # Azure Login using OIDC Federated Identity
       - name: Azure Login
         uses: azure/login@v1
