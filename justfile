@@ -35,9 +35,6 @@ create-federated-identity:
   az ad app federated-credential create \
       --id "$app_id" \
       --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
-  az ad app federated-credential create \
-      --id "$app_id" \
-      --parameters "{\"name\":\"GitHubActionsFeature\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/feature/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
 
   echo "All done"
 
@@ -79,7 +76,6 @@ delete-app-federations:
       --id "$app_id" \
       --federated-credential-id "$credential_id"
   done
-
   echo "Deleted all app federations"
 
 # Show all debug info
@@ -88,8 +84,6 @@ debug:
   az ad sp list --display-name "$AZURE_APP_NAME" -o table
   just _get-app-federations
 
-
-# Show all federations for the app
 _get-app-federations:
   #!/usr/bin/env bash
   app_id=$(just _get-app-id)
