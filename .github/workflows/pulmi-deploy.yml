@@ -33,7 +33,7 @@ jobs:
         with:
           command: preview
           # TODO: Use github environments
-          stack-name: azure-k3s-cluster/staging
+          stack-name: NQuirmbach/azure-k3s-cluster/staging
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
