@@ -1,16 +1,20 @@
-name: Pulumi Deploy to Azure using OIDC
+name: Deploy Azure infra resources
 
 on:
   push:
     branches:
-      - main  # Oder ein anderer Branch
+      - main
+      - feature/*
+    paths:
+      - .github/workflows/pulumi-deploy.yml
+      - pulumi
 
 jobs:
   pulumi:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write  # Erforderlich für OIDC
+      id-token: write # Erforderlich für OIDC
       contents: read
 
     steps:
