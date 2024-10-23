@@ -8,8 +8,10 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		// Create an Azure Resource Group
-		rg, err := resources.NewResourceGroup(ctx, "k3s-cluster-rg", nil)
+		// Get the existing resource group
+		rg, err := resources.LookupResourceGroup(ctx, &resources.LookupResourceGroupArgs{
+			ResourceGroupName: "k3s-cluster-rg",
+		})
 		if err != nil {
 			return err
 		}
@@ -21,8 +23,8 @@ func main() {
 				},
 			},
 			FlowTimeoutInMinutes: pulumi.Int(10),
-			Location:             rg.Location,
-			ResourceGroupName:    rg.Name,
+			Location:             pulumi.String(rg.Location),
+			ResourceGroupName:    pulumi.String(rg.Name),
 		})
 		if err != nil {
 			return err
@@ -30,7 +32,7 @@ func main() {
 
 		_, err = network.NewSubnet(ctx, "cluster-subnet", &network.SubnetArgs{
 			AddressPrefix:      pulumi.String("10.0.0.1/16"),
-			ResourceGroupName:  rg.Name,
+			ResourceGroupName:  pulumi.String(rg.Name),
 			VirtualNetworkName: vnet.Name,
 		})
 		if err != nil {

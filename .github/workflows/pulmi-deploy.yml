@@ -19,12 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Debug OIDC Token
-        run: |
-          echo "OIDC Token: $ACTIONS_ID_TOKEN_REQUEST_URL"
-        env:
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ steps.auth.outputs.id_token }}
-
       # Azure Login using OIDC Federated Identity
       - name: Azure Login
         uses: azure/login@v1
@@ -38,6 +32,10 @@ jobs:
         uses: pulumi/actions@v3
         with:
           command: pulumi preview
+          # TODO: Use github environments
+          stack-name: nquirmbach/k3s-cluster/staging
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       # Run Pulumi
       - name: Pulumi Up
