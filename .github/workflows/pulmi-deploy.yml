@@ -5,9 +5,9 @@ on:
     branches:
       - main
       - feature/*
-    paths:
-      - .github/workflows/pulumi-deploy.yml
-      - pulumi
+  pull_request:
+    branches:
+      - feature/*
 
 jobs:
   pulumi:
