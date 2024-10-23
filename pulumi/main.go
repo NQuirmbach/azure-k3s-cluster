@@ -31,7 +31,7 @@ func main() {
 		}
 
 		_, err = network.NewSubnet(ctx, "cluster-subnet", &network.SubnetArgs{
-			AddressPrefix:      pulumi.String("10.0.0.1/16"),
+			AddressPrefix:      pulumi.String("10.0.0.0/16"),
 			ResourceGroupName:  pulumi.String(rg.Name),
 			VirtualNetworkName: vnet.Name,
 		})
