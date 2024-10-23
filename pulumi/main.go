@@ -10,7 +10,7 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 		// Get the existing resource group
 		rg, err := resources.LookupResourceGroup(ctx, &resources.LookupResourceGroupArgs{
-			ResourceGroupName: "k3s-cluster-rg",
+			ResourceGroupName: "k3s-cluster",
 		})
 		if err != nil {
 			return err
