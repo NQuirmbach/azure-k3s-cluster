@@ -34,10 +34,13 @@ create-federated-identity:
   echo "Creating federated identity"
   az ad app federated-credential create \
       --id "$app_id" \
-       --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+      --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+
+  az ad app federated-credential create \
+      --id "$app_id" \
+      --parameters "{\"name\":\"GitHubActionsFeature\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/feature/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
 
   az ad sp list --display-name "$AZURE_APP_NAME"
-
   echo "All done"
 
 # Deletes the federated identity, role assignment and service-principal
@@ -68,21 +71,29 @@ delete-app-federation:
   #!/usr/bin/env bash
   echo "Deleting app federation"
   app_id=$(just _get-sp-prop "appId")
-  credential_id=$(az ad app federated-credential list --id "$app_id" --query "[0].id" -o tsv)
+  federated_ids=$(az ad app federated-credential list --id "$app_id" --query "[].id" -o tsv)
 
-  if [[ -z "${credential_id}" ]]; then
+  if [[ -z "${federated_ids}" ]]; then
     exit
   fi
 
-  az ad app federated-credential delete \
-    --id "$app_id" \
-    --federated-credential-id "$credential_id"
+  for credential_id in $federated_ids; do
+    az ad app federated-credential delete \
+      --id "$app_id" \
+      --federated-credential-id "$credential_id"
+  done
+
+  echo "Deleted all app federations"
 
 # Show all federations for the app
 get-app-federations:
   #!/usr/bin/env bash
   app_id=$(just _get-sp-prop "appId")
   az ad app federated-credential list --id "$app_id"
+
+# Show all federations for the app
+get-principal:
+  az ad sp list --display-name "$AZURE_APP_NAME"
 
 _get-sp-prop prop:
   az ad sp list --display-name "$AZURE_APP_NAME" --query "[].{{ prop }}" -o tsv
