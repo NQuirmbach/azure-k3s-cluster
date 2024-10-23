@@ -1,0 +1,37 @@
+name: Pulumi Deploy to Azure using OIDC
+
+on:
+  push:
+    branches:
+      - main  # Oder ein anderer Branch
+
+jobs:
+  pulumi:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Erforderlich für OIDC
+      contents: read
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Azure Login using OIDC Federated Identity
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Set up Pulumi
+      - name: Install Pulumi
+        uses: pulumi/actions@v3
+        with:
+          command: pulumi preview
+
+      # Run Pulumi
+      - name: Pulumi Up
+        run: pulumi up --yes
