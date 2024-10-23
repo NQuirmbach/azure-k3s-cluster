@@ -24,23 +24,21 @@ create-federated-identity:
   #!/usr/bin/env bash
   echo "Creating a new Azure AD Service Princiap & Role Assignment"
   subscription_id=$(az account show --query "id" -o tsv)
-  app_id=$(az ad sp create-for-rbac --name "$AZURE_APP_NAME" --query "appId" -o tsv)
 
-  echo "Creating role assignment for app $AZURE_APP_NAME"
+  echo "Creating service principal '$AZURE_APP_NAME'"
+  app_id=$(az ad sp create-for-rbac --name "$AZURE_APP_NAME" \
+    --role "$AZURE_CLIENT_ROLE" \
+    --scopes "/subscriptions/$subscription_id/resourceGroups/$AZURE_RESOURCE_GROUP" \
+    --query "appId" -o tsv)
 
-  az role assignment create --assignee "$app_id" --role "$AZURE_CLIENT_ROLE" \
-    --scope "/subscriptions/$subscription_id/resourceGroups/$AZURE_RESOURCE_GROUP"
-
-  echo "Creating federated identity"
+  echo "Creating app federations"
   az ad app federated-credential create \
       --id "$app_id" \
       --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
-
   az ad app federated-credential create \
       --id "$app_id" \
       --parameters "{\"name\":\"GitHubActionsFeature\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/feature/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
 
-  az ad sp list --display-name "$AZURE_APP_NAME"
   echo "All done"
 
 # Deletes the federated identity, role assignment and service-principal
@@ -54,23 +52,22 @@ delete-federated-identity:
     exit
   fi
 
-  just delete-app-federation
+  just delete-app-federations
 
   echo "Removing role assignment..."
-  az role assignment delete --assignee "$principal_id" --resource-group "$AZURE_RESOURCE_GROUP"
+  az role assignment delete --assignee "$app_id" --resource-group "$AZURE_RESOURCE_GROUP"
 
-  echo "Deleting service principal & app..."
-  az ad sp delete --id "$principal_id"
+  echo "Deleting app"
   az ad app delete --id "$app_id"
 
   echo "All done!"
 
 
 # Deletes the existing app federation
-delete-app-federation:
+delete-app-federations:
   #!/usr/bin/env bash
   echo "Deleting app federation"
-  app_id=$(just _get-sp-prop "appId")
+  app_id=$(just _get-app-id)
   federated_ids=$(az ad app federated-credential list --id "$app_id" --query "[].id" -o tsv)
 
   if [[ -z "${federated_ids}" ]]; then
@@ -85,15 +82,18 @@ delete-app-federation:
 
   echo "Deleted all app federations"
 
+# Show all debug info
+debug:
+  az ad app list --filter "displayName eq '$AZURE_APP_NAME'" -o table
+  az ad sp list --display-name "$AZURE_APP_NAME" -o table
+  just _get-app-federations
+
+
 # Show all federations for the app
-get-app-federations:
+_get-app-federations:
   #!/usr/bin/env bash
-  app_id=$(just _get-sp-prop "appId")
+  app_id=$(just _get-app-id)
   az ad app federated-credential list --id "$app_id"
 
-# Show all federations for the app
-get-principal:
-  az ad sp list --display-name "$AZURE_APP_NAME"
-
-_get-sp-prop prop:
-  az ad sp list --display-name "$AZURE_APP_NAME" --query "[].{{ prop }}" -o tsv
+_get-app-id:
+  az ad sp list --display-name "$AZURE_APP_NAME" --query "[].appId" -o tsv
