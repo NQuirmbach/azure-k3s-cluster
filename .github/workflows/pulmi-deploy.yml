@@ -4,13 +4,10 @@ on:
   push:
     branches:
       - main
-      - feature/*
-  pull_request:
-    branches:
-      - feature/*
 
 jobs:
   pulumi:
+    name: "Deploy on Azure"
     runs-on: ubuntu-latest
 
     permissions:

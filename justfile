@@ -1,22 +1,27 @@
 # Justfile manual 
 # https://just.systems/man/en/
-
 set dotenv-load
 
 _default:
   just --list
 
+# Does all the initial work for you
+init: create-resource-group create-federated-identity
+
+# Deletes service-principal, assignemnts and resource-group
+destroy: delete-federated-identity delete-resource-group
+
 # Create a new azure resource group for this example
-create-az-resource-group:
+create-resource-group:
   az account show
   az group create --name "$AZURE_RESOURCE_GROUP" --location "$AZURE_LOCATION"
 
-delete-az-resource-group:
-  az account show
-  az group show --name "$AZURE_RESOURCE_GROUP"
+# Delete the existing resource group
+delete-resource-group:
   az group delete --name "$AZURE_RESOURCE_GROUP"
 
-create-az-federated-identity:
+# Create a new service-principal, add Contributor rights for resource-group and create app federation for github repo
+create-federated-identity:
   #!/usr/bin/env bash
   echo "Creating a new Azure AD Service Princiap & Role Assignment"
 
@@ -30,26 +35,47 @@ create-az-federated-identity:
   echo "Creating federated identity"
   az ad app federated-credential create \
       --id "$app_id" \
-      --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/$BRANCH_NAME\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+      --parameters "{\"name\":\"GitHubActions\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/*\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
 
   echo "All done"
 
-
-delete-az-federated-identity:
+# Deletes the federated identity, role assignment and service-principal
+delete-federated-identity:
   #!/usr/bin/env bash
   echo "Removing existing Azure AD App"
-  app_id=$(az ad sp list --filter "displayName eq '$AZURE_APP_NAME'" --query "[].id" -o tsv)
+  principal_id=$(az ad sp list --display-name "$AZURE_APP_NAME" --query "[].id" -o tsv)
   
-  if [[ -z "${app_id}" ]]; then
-    echo "No app with name $AZURE_APP_NAME found. Skipping"
+  if [[ -z "${principal_id}" ]]; then
+    echo "No service principal with name $AZURE_APP_NAME found. Skipping"
     exit
   fi
 
-  echo "Found app with id $app_id"
+  just _delete-app-federation
+
   echo "Removing role assignment..."
-  az role assignment delete --assignee "$app_id" --resource-group "$AZURE_RESOURCE_GROUP"
+  az role assignment delete --assignee "$principal_id" --resource-group "$AZURE_RESOURCE_GROUP"
 
   echo "Deleting service principal..."
-  az ad sp delete --id "$app_id"
+  az ad sp delete --id "$principal_id"
 
   echo "All done!"
+
+_delete-app-federation:
+  #!/usr/bin/env bash
+  echo "Deleting app federation"
+  app_id=$(az ad app list --filter "displayName eq '$AZURE_APP_NAME'" --query '[].id' -o tsv)
+  credential_id=$(az ad app federated-credential list --id "$app_id" --query "[0].id" -o tsv)
+
+  if [[ -z "${credential_id}" ]]; then
+    exit
+  fi
+
+  az ad app federated-credential delete \
+    --id "$app_id" \
+    --federated-credential-id "$credential_id"
+
+# Show all federations for the app
+get-app-federations:
+  #!/usr/bin/env bash
+  app_id=$(az ad app list --filter "displayName eq '$AZURE_APP_NAME'" --query '[].id' -o tsv)
+  az ad app federated-credential list --id "$app_id"
