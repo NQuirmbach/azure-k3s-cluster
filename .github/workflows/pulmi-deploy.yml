@@ -31,7 +31,7 @@ jobs:
       - name: Install Pulumi
         uses: pulumi/actions@v3
         with:
-          command: pulumi preview
+          command: preview
           # TODO: Use github environments
           stack-name: nquirmbach/k3s-cluster/staging
         env:
