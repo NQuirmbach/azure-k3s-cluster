@@ -47,10 +47,10 @@ jobs:
 
       - name: Plan changes
         working-directory: infra
-        run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars" -out terraform.tfstate
+        run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars" -out=terraform.tfstate -input=false
 
       - name: Upload tfstate as artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: tf-state
           path: infra/terraform.tfstate
@@ -74,7 +74,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Download tfstate artifact
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v4
         with:
           name: tf-state
           path: infra/terraform.tfstate
