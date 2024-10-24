@@ -54,6 +54,7 @@ jobs:
         with:
           name: tf-state
           path: infra/terraform.tfstate
+          compression-level: 0
 
   apply:
     runs-on: ubuntu-latest
