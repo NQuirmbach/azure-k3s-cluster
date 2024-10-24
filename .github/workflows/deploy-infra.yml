@@ -12,6 +12,11 @@ jobs:
     strategy:
       matrix:
         environment: [staging, production]
+        include:
+          - branch: staging
+            environment: staging
+          - branch: main
+            environment: production
 
     steps:
       - name: Checkout code
@@ -42,7 +47,13 @@ jobs:
     needs: plan
     strategy:
       matrix:
-        environment: [staging, production] # Apply für beide Environments
+        environment: [staging, production]
+        include:
+          - branch: staging
+            environment: staging
+          - branch: main
+            environment: production
+
     environment: ${{ matrix.environment }} # Approval für jedes Environment
     steps:
       - name: Checkout code
