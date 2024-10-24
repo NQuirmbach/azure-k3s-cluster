@@ -77,7 +77,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tf-state
-          path: $GITHUB_WORKSPACE/infra
+          path: infra
 
       - name: Init OpenTofu
         working-directory: infra
