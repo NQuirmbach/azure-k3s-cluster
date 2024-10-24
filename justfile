@@ -28,7 +28,12 @@ _create-app-federations app_id:
   for env in $GITHUB_ENVIRONMENTS; do
     az ad app federated-credential create \
         --id "{{ app_id }}" \
-        --parameters "{\"name\":\"GitHubActions$env\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:environment:$env\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+        --parameters "{\"name\":\"GitHubActionsEnv-$env\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:environment:$env\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+
+    az ad app federated-credential create \
+        --id "{{ app_id }}" \
+        --parameters "{\"name\":\"GitHubActionsBranch-$env\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:$GITHUB_REPO:ref:refs/heads/$env\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+    
     echo "Created app federation for environment $env"
   done
 

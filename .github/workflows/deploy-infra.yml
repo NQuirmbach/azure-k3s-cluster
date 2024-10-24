@@ -13,6 +13,8 @@ permissions:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,13 +30,17 @@ jobs:
         uses: opentofu/setup-opentofu@v1
 
       - name: OpenTofu fmt
-        run: tofu fmt -check
-        continue-on-error: true
         working-directory: infra
+        continue-on-error: true
+        run: tofu fmt -check
 
       - name: Init OpenTofu
         working-directory: infra
         run: tofu init
+
+      - name: Switch to workspace ${{ github.ref_name }}
+        working-directory: infra
+        run: tofu workspace select ${{ github.ref_name }}
 
       - name: Run Plan for ${{ github.ref_name }}
         working-directory: infra
