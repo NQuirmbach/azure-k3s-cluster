@@ -15,6 +15,7 @@ locals {
   enviroment = terraform.workspace
   tags = {
     env = terraform.workspace
+    app = "k3s-cluster"
   }
 }
 
