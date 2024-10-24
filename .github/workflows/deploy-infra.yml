@@ -1,0 +1,62 @@
+name: OpenTofu Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup OpenTofu
+        run: |
+          curl -sSL https://opentofu.org/install.sh | bash
+
+      - name: Set up Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run OpenTofu Plan for ${{ matrix.environment }}
+        run: |
+          cd infra
+          opentofu init
+          opentofu plan -var-file="${{ matrix.environment }}.tfvars"
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: plan
+    strategy:
+      matrix:
+        environment: [staging, production] # Apply für beide Environments
+    environment: ${{ matrix.environment }} # Approval für jedes Environment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup OpenTofu
+        run: |
+          curl -sSL https://opentofu.org/install.sh | bash
+
+      - name: Set up Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run OpenTofu Apply for ${{ matrix.environment }}
+        run: |
+          cd infra
+          opentofu apply -var-file="${{ matrix.environment }}.tfvars" -auto-approve
