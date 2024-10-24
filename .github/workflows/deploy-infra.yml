@@ -1,5 +1,4 @@
-name: OpenTofu Deploy
-
+name: Deploy Azure Infra
 on:
   push:
     branches:
@@ -38,17 +37,19 @@ jobs:
         continue-on-error: true
         run: tofu fmt -check
 
-      - name: Init OpenTofu
-        working-directory: infra
-        run: tofu init
-
       - name: Switch workspace
         working-directory: infra
         run: tofu workspace select -or-create ${{ github.ref_name }}
 
+      - name: Init OpenTofu
+        working-directory: infra
+        run: tofu init
+
       - name: Plan changes
         working-directory: infra
         run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars"
+        env:
+          TF_LOG: DEBUG
 
   apply:
     runs-on: ubuntu-latest
