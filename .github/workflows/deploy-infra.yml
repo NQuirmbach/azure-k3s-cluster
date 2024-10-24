@@ -13,8 +13,6 @@ permissions:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,15 +27,18 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
 
-      - name: Init OpenTofu
-        run: |
-          cd infra
-          opentofu init
+      - name: OpenTofu fmt
+        run: tofu fmt -check
+        continue-on-error: true
+        working-directory: infra
 
-      - name: Run Plan for ${{ matrix.environment }}
-        run: |
-          cd infra
-          opentofu plan -var-file="environments/${{ matrix.environment }}.tfvars"
+      - name: Init OpenTofu
+        working-directory: infra
+        run: tofu init
+
+      - name: Run Plan for ${{ github.ref_name }}
+        working-directory: infra
+        run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars"
 
   apply:
     runs-on: ubuntu-latest
