@@ -47,7 +47,12 @@ jobs:
 
       - name: Plan changes
         working-directory: infra
-        run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars"
+        run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars" -out terraform.tfstate
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: tf-state
+          path: infra/terraform.tfstate
 
   apply:
     runs-on: ubuntu-latest
