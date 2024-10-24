@@ -37,13 +37,13 @@ jobs:
         continue-on-error: true
         run: tofu fmt -check
 
-      - name: Switch workspace
-        working-directory: infra
-        run: tofu workspace select -or-create ${{ github.ref_name }}
-
       - name: Init OpenTofu
         working-directory: infra
         run: tofu init
+
+      - name: Switch workspace
+        working-directory: infra
+        run: tofu workspace select -or-create ${{ github.ref_name }}
 
       - name: Plan changes
         working-directory: infra
