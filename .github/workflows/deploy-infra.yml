@@ -48,8 +48,6 @@ jobs:
       - name: Plan changes
         working-directory: infra
         run: tofu plan -var-file="environments/${{ github.ref_name }}.tfvars"
-        env:
-          TF_LOG: DEBUG
 
   apply:
     runs-on: ubuntu-latest
