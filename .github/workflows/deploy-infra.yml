@@ -6,6 +6,10 @@ on:
       - main
       - staging
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   plan:
     runs-on: ubuntu-latest
@@ -53,8 +57,9 @@ jobs:
             environment: staging
           - branch: main
             environment: production
+    environment:
+      name: ${{ matrix.environment }}
 
-    environment: ${{ matrix.environment }} # Approval für jedes Environment
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
