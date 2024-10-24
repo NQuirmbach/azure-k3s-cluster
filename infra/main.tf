@@ -14,7 +14,7 @@ provider "azurerm" {
 locals {
   enviroment = terraform.workspace
   tags = {
-    env = var.enviroment
+    env = terraform.workspace
   }
 }
 
