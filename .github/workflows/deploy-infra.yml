@@ -13,14 +13,7 @@ permissions:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [staging, production]
-        include:
-          - branch: staging
-            environment: staging
-          - branch: main
-            environment: production
+    environment: ${{ github.ref_name }}
 
     steps:
       - name: Checkout code
@@ -49,16 +42,7 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     needs: plan
-    strategy:
-      matrix:
-        environment: [staging, production]
-        include:
-          - branch: staging
-            environment: staging
-          - branch: main
-            environment: production
-    environment:
-      name: ${{ matrix.environment }}
+    environment: ${{ github.ref_name }}
 
     steps:
       - name: Checkout code
