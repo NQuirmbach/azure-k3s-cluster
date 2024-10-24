@@ -10,6 +10,12 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_USE_OIDC: "true"
+
 jobs:
   plan:
     runs-on: ubuntu-latest
@@ -35,11 +41,6 @@ jobs:
       - name: Init OpenTofu
         working-directory: infra
         run: tofu init
-        env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_USE_OIDC: "true"
 
       - name: Switch workspace
         working-directory: infra
@@ -53,7 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: plan
     environment: ${{ github.ref_name }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -68,7 +68,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Run OpenTofu Apply for ${{ matrix.environment }}
-        run: |
-          cd infra
-          opentofu apply -var-file="${{ matrix.environment }}.tfvars" -auto-approve
+      - name: Apply changes
+        working-directory: infra
+        run: tofu apply -var-file="environments/${{ github.ref_name }}}.tfvars" -auto-approve
