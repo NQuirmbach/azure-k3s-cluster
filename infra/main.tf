@@ -4,6 +4,7 @@ terraform {
     storage_account_name = "tfbackend1727941381"
     container_name       = "tfstate"
     key                  = "k3scluster.tfstate"
+    use_oidc             = true
   }
 }
 
