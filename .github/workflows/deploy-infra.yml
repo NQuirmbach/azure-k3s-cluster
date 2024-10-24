@@ -79,6 +79,10 @@ jobs:
           name: tf-state
           path: infra/terraform.tfstate
 
+      - name: Init OpenTofu
+        working-directory: infra
+        run: tofu init
+
       - name: Switch workspace
         working-directory: infra
         run: tofu workspace select -or-create ${{ github.ref_name }}
