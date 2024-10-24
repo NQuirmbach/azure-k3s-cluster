@@ -3,13 +3,14 @@ provider "azurerm" {
 }
 
 locals {
+  enviroment = terraform.workspace
   tags = {
     env = var.enviroment
   }
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "${var.resource_group_name}-${var.enviroment}"
+  name     = "${var.resource_group_name}-${terraform.workspace}"
   location = var.location
   tags     = local.tags
 }
