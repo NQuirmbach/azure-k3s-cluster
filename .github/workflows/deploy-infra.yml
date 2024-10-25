@@ -83,9 +83,7 @@ jobs:
       - name: Create terraform var file
         working-directory: infra
         run: |
-          echo "cluster_node_ssh_public_key=${SSH_PUBLIC_KEY}" >> terraform.tfvars
-        env:
-          SSH_PUBLIC_KEY:
+          echo "cluster_node_ssh_public_key = \"${{ secrets.SSH_PUBLIC_KEY }}\"" >> terraform.tfvars
 
       - name: Apply changes
         working-directory: infra
