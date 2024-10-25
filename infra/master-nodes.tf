@@ -1,3 +1,25 @@
+resource "azurerm_network_security_group" "master_nsg" {
+  name                = "k3sclustermasternsg${local.suffix}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  tags                = local.tags
+}
+
+resource "azurerm_network_security_rule" "master_allow_ssh" {
+  resource_group_name         = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.master_nsg.name
+
+  name                       = "allow-ssh"
+  priority                   = 1000
+  direction                  = "Inbound"
+  access                     = "Allow"
+  protocol                   = "TCP"
+  destination_port_range     = "22"
+  destination_address_prefix = "*"
+  source_address_prefix      = "*"
+  source_address_prefixes    = "*"
+}
+
 resource "azurerm_linux_virtual_machine_scale_set" "master_nodes" {
   name                = "k3sclustermasternodes${local.suffix}"
   resource_group_name = azurerm_resource_group.rg.name
@@ -24,8 +46,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "master_nodes" {
   }
 
   network_interface {
-    name    = "k3sclustermaternic${local.suffix}"
-    primary = true
+    name                      = "k3sclustermaternic${local.suffix}"
+    primary                   = true
+    network_security_group_id = azurerm_network_security_group.master_nsg.id
 
     ip_configuration {
       name      = "internal"
