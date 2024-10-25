@@ -15,9 +15,9 @@ resource "azurerm_network_security_rule" "master_allow_ssh" {
   access                     = "Allow"
   protocol                   = "TCP"
   destination_port_range     = "22"
-  destination_address_prefix = "*"
+  source_port_range          = "*"
   source_address_prefix      = "*"
-  source_address_prefixes    = "*"
+  destination_address_prefix = "*"
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "master_nodes" {
