@@ -12,7 +12,6 @@ variable "location" {
 
 variable "cluster_master_node_sku" {
   description = "VM SKU for the master nodes"
-  default     = "Standard_D2sv5"
   type        = string
 }
 variable "cluster_master_node_count" {
