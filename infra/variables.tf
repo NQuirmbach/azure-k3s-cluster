@@ -9,3 +9,25 @@ variable "location" {
   default     = "westeurope"
   type        = string
 }
+
+variable "cluster_master_node_sku" {
+  description = "VM SKU for the master nodes"
+  default     = "Standard_D2sv5"
+  type        = string
+}
+variable "cluster_master_node_count" {
+  description = "VM Count for master nodes"
+  default     = 1
+  type        = number
+}
+
+variable "cluster_admin_username" {
+  description = "Admin user name for VMs"
+  default     = "adminuser"
+  type        = string
+}
+
+variable "cluster_node_ssh_public_key" {
+  description = "Public SSH key for the cluster nodes"
+  type        = string
+}
