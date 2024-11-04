@@ -1,5 +1,5 @@
 resource "azurerm_network_security_group" "master_nsg" {
-  name                = "k3sclustermasternsg${local.suffix}"
+  name                = "k3sclustermasternodesnsg${local.suffix}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   tags                = local.tags

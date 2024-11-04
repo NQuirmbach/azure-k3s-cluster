@@ -19,6 +19,15 @@ variable "cluster_master_node_count" {
   default     = 1
   type        = number
 }
+variable "cluster_worker_node_sku" {
+  description = "VM SKU for the master nodes"
+  type        = string
+}
+variable "cluster_worker_node_count" {
+  description = "VM Count for master nodes"
+  default     = 1
+  type        = number
+}
 
 variable "cluster_admin_username" {
   description = "Admin user name for VMs"
